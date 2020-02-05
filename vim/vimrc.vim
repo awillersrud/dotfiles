@@ -92,4 +92,8 @@
 
 " Fix for: https://github.com/fatih/vim-go/issues/1509
 
+"  Plugins
+	source ~/dotfiles/vim/surround.vim
+
+
 filetype plugin indent on
