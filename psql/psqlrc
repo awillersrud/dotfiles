@@ -1,0 +1,4 @@
+\timing on
+
+\set FETCH_COUNT 100
+\set PROMPT1 %n:%/%R%#
