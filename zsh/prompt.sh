@@ -20,18 +20,28 @@ set_prompt() {
  	if git rev-parse --is-inside-work-tree 2> /dev/null | grep -q 'true' ; then
  		PS1+=' | '
  		PS1+="%{$fg[green]%}$(git rev-parse --abbrev-ref HEAD 2> /dev/null)%{$reset_color%}"
-		BEHIND=$(git log ..@{upstream} --oneline 2> /dev/null | wc -l)
-		if [ $BEHIND -gt 0 ]; then
-			PS1+="%{$fg[yellow]%} behind $(echo $BEHIND | awk '{$1=$1};1')%{$reset_color%}"
-		fi
-		AHEAD=$(git log @{upstream}.. --oneline 2> /dev/null | wc -l)
-		if [ $AHEAD -gt 0 ]; then
-			PS1+="%{$fg[yellow]%} ahead $(echo $AHEAD | awk '{$1=$1};1')%{$reset_color%}"
+		BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+		UPSTREAM=$(git rev-parse --abbrev-ref @{upstream} 2>/dev/null)
+		if [[ $? == 0 ]]; then
+			if [[ "origin/$BRANCH" != $UPSTREAM ]]; then
+				PS1+="%{$fg[yellow]%} -> $UPSTREAM%{$reset_color%}"
+			fi
+
+			BEHIND=$(git log ..@{upstream} --oneline 2> /dev/null | wc -l)
+			if [ $BEHIND -gt 0 ]; then
+				PS1+="%{$fg[yellow]%} behind $(echo $BEHIND | awk '{$1=$1};1')%{$reset_color%}"
+			fi
+			AHEAD=$(git log @{upstream}.. --oneline 2> /dev/null | wc -l)
+			if [ $AHEAD -gt 0 ]; then
+				PS1+="%{$fg[yellow]%} ahead $(echo $AHEAD | awk '{$1=$1};1')%{$reset_color%}"
+			fi
+		else
+			PS1+="%{$fg[yellow]%} no-upstream%{$reset_color%}"
 		fi
 		STATUS=$(git status --short | wc -l)
 		if [ $STATUS -gt 0 ]; then
 			PS1+="%{$fg[yellow]%} +$(echo $STATUS | awk '{$1=$1};1')%{$reset_color%}"
- 		fi
+		fi
  	fi
 
 
