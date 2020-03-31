@@ -8,7 +8,7 @@ setopt PROMPT_SUBST
 set_prompt() {
 
 	# [
-	PS1="["
+	PS1="[ "
 
 	# Path: http://stevelosh.com/blog/2010/02/my-extravagant-zsh-prompt/
 	PS1+="%{$fg_bold[white]%}${PWD/#$HOME/~}%{$reset_color%}"
@@ -18,7 +18,7 @@ set_prompt() {
 
  	# Git
  	if git rev-parse --is-inside-work-tree 2> /dev/null | grep -q 'true' ; then
- 		PS1+=', '
+ 		PS1+=' , '
  		PS1+="%{$fg[green]%}$(git rev-parse --abbrev-ref HEAD 2> /dev/null)%{$reset_color%}"
 		BEHIND=$(git log ..@{upstream} --oneline 2> /dev/null | wc -l)
 		if [ $BEHIND -gt 0 ]; then
@@ -43,7 +43,7 @@ set_prompt() {
 
 	# PID
 	if [[ $! -ne 0 ]]; then
-		PS1+=', '
+		PS1+=' , '
 		PS1+="%{$fg[yellow]%}PID:$!%{$reset_color%}"
 	fi
 
@@ -51,12 +51,12 @@ set_prompt() {
 	CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
 	if [ ${CAN_I_RUN_SUDO} -gt 0 ]
 	then
-		PS1+=', '
+		PS1+=' , '
 		PS1+="%{$fg_bold[red]%}SUDO%{$reset_color%}"
 	fi
 
 	# ]
-	PS1+="]≫ "
+	PS1+=" ]≫ "
 }
 
 precmd_functions+=set_prompt
