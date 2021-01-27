@@ -42,6 +42,11 @@ set_prompt() {
 		if [ $STATUS -gt 0 ]; then
 			PS1+="%{$fg[yellow]%} +$(echo $STATUS | awk '{$1=$1};1')%{$reset_color%}"
 		fi
+
+		if [[ $JAVA_HOME != *"jdk1.8.0"* ]]; then
+			PS1+=' | '
+			PS1+="%{$fg[cyan]%}$(echo $JAVA_HOME | cut -d'/' -f 5)%{$reset_color%}"
+		fi
  	fi
 
 
