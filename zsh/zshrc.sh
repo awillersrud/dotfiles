@@ -19,6 +19,24 @@
 source ~/dotfiles/zsh/plugins/fixls.zsh
 
 #Functions
+	# Unzip to tmp folder and cd to that folder, "zd -" to change directory back to previous folder
+	# Inspired by total commander style handling of zip files
+	function zd() {
+		if [[ "$1" == "-" ]]; then
+			PREVIOUS_DIRECTORY=`cat ~/.zd_history`
+			if [ ! -z "$PREVIOUS_DIRECTORY" ]; then
+				cd $PREVIOUS_DIRECTORY;
+				echo "" > ~/.zd_history
+			fi
+		else
+			SOURCE_DIRECTORY=`pwd`
+			TARGET=/tmp/unzip-`openssl rand -base64 12 | tr -dc 'a-zA-Z0-9'`;
+			unzip $1 -d $TARGET;
+			echo $SOURCE_DIRECTORY > ~/.zd_history
+			cd $TARGET;
+		fi
+	}
+
 	# Loop a command and show the output in vim
 	loop() {
 		echo ":cq to quit\n" > /tmp/log/output 
