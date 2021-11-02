@@ -9,6 +9,8 @@
 # Aliases
 	#alias v="vim -p"
 	alias ll='ls -G -la'
+	alias jsonf='python -m json.tool'
+	alias epoch='date -r'
 	mkdir -p /tmp/log
 	
 # Settings
