@@ -42,12 +42,13 @@ set_prompt() {
 		if [ $STATUS -gt 0 ]; then
 			PS1+="%{$fg[yellow]%} +$(echo $STATUS | awk '{$1=$1};1')%{$reset_color%}"
 		fi
-
-		if [[ $JAVA_HOME != *"jdk-11"* ]]; then
-			PS1+=' | '
-			PS1+="%{$fg[cyan]%}$(echo $JAVA_HOME | cut -d'/' -f 4)%{$reset_color%}"
-		fi
  	fi
+
+	# Display non-default JDK
+	if [[ $JAVA_HOME != *"jdk-11"* ]]; then
+		PS1+=' | '
+		PS1+="%{$fg[cyan]%}$(echo $JAVA_HOME | cut -d'/' -f 4)%{$reset_color%}"
+	fi
 
 
 	# Timer: http://stackoverflow.com/questions/2704635/is-there-a-way-to-find-the-running-time-of-the-last-executed-command-in-the-shel
