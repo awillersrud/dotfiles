@@ -13,6 +13,8 @@
 	alias ll='ls -G -la'
 	alias jsonf='python -m json.tool'
 	alias epoch='date -r'
+  	alias g='openGitRepo'
+	alias kube-port-forward='read -r namespace pod junk <<<"$(kubectl get pods -A | fzf)" && kubectl port-forward -n "$namespace" "pod/$pod" 8087:8080'
 	mkdir -p /tmp/log
 	
 # Settings
@@ -38,6 +40,11 @@ source ~/dotfiles/zsh/plugins/fixls.zsh
 			cd $TARGET;
 		fi
 	}
+
+  function openGitRepo() {
+    TARGET=`find ~/src -maxdepth 4 -name .git -type d | sed 's#/.git##g' | fzf`
+    cd $TARGET 
+  }
 
 	# Loop a command and show the output in vim
 	loop() {
