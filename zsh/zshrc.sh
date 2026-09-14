@@ -14,6 +14,7 @@
 	alias jsonf='python -m json.tool'
 	alias epoch='date -r'
   	alias g='openGitRepo'
+  	alias gw='openWorktree'
 	alias kube-port-forward='read -r namespace pod junk <<<"$(kubectl get pods -A | fzf)" && kubectl port-forward -n "$namespace" "pod/$pod" 8087:8080'
 	mkdir -p /tmp/log
 	
@@ -44,6 +45,43 @@ source ~/dotfiles/zsh/plugins/fixls.zsh
   function openGitRepo() {
     TARGET=`find ~/src -maxdepth 4 -name .git -type d | sed 's#/.git##g' | fzf`
     cd $TARGET 
+  }
+
+  # Pick a worktree of the current repo, most recently used first. The main worktree is listed too.
+  function openWorktree() {
+    local mainWorktree worktreePath gitDir lastUsed label prettyPath header target
+    local -a worktreePaths worktreeRows
+    local pathWidth=0
+
+    worktreePaths=(${(f)"$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print substr($0, 10)}')"})
+    if (( ${#worktreePaths} == 0 )); then
+      echo "openWorktree: not inside a git repository" >&2
+      return 1
+    fi
+    mainWorktree=$worktreePaths[1]
+
+    for worktreePath in $worktreePaths; do
+      gitDir=$(git -C "$worktreePath" rev-parse --absolute-git-dir 2>/dev/null) || continue
+      lastUsed=$(stat -f %m "$gitDir/index" 2>/dev/null) || lastUsed=$(stat -f %m "$worktreePath")
+      label=$(git -C "$worktreePath" branch --show-current)
+      [[ -z $label ]] && label="(detached)"
+      [[ $worktreePath == $mainWorktree ]] && label="$label [main]"
+      prettyPath=${worktreePath/#$HOME/\~}
+      (( ${#prettyPath} > pathWidth )) && pathWidth=${#prettyPath}
+      worktreeRows+=("$lastUsed"$'\t'"$worktreePath"$'\t'"$prettyPath"$'\t'"$label")
+    done
+
+    header=$(printf "%-${pathWidth}s  %s" "WORKTREE" "BRANCH")
+    target=`printf '%s\n' $worktreeRows \
+      | sort -rn \
+      | while IFS=$'\t' read -r lastUsed worktreePath prettyPath label; do
+          printf '%s\t%-'"$pathWidth"'s  %s\n' "$worktreePath" "$prettyPath" "$label"
+        done \
+      | fzf --delimiter=$'\t' --with-nth=2 --header="$header" \
+      | cut -f1`
+    if [[ -n $target ]]; then
+      cd "$target"
+    fi
   }
 
 	# Loop a command and show the output in vim
