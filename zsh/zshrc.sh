@@ -59,9 +59,6 @@ source ~/dotfiles/zsh/plugins/fixls.zsh
 		done;
 	}
 
-# Custom cd
-chpwd() ls
-
 # For vim mappings: 
 	stty -ixon
 
