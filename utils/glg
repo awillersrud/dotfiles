@@ -1,26 +1,28 @@
+#!/usr/bin/env bash
 # git log show with fzf
+# Accepts the same arguments as git log, e.g. glg --author bob origin/main -- docs
 glg() {
 
   # param validation
-  if [[ ! `git log -n 1 $@ | head -n 1` ]] ;then
+  if [[ ! $(git log -n 1 "$@" | head -n 1) ]]; then
     return
   fi
 
-  # filter by file string
-  local filter
-  # param existed, git log for file if existed
-  if [ -n $@ ] && [ -f $@ ]; then
-    filter="-- $@"
+  # paths after -- also limit the diff shown for each commit
+  local filter=""
+  local paths=() seen_separator=""
+  for arg in "$@"; do
+    if [[ -n $seen_separator ]]; then
+      paths+=("$arg")
+    elif [[ $arg == "--" ]]; then
+      seen_separator=1
+    fi
+  done
+  if (( ${#paths[@]} )); then
+    filter="-- $(printf '%q ' "${paths[@]}")"
   fi
 
-  # git command
-  
-  #enable debug logging
-  #set -x
-  #echo "filter: $filter"
-  #echo "\$@: $@"
-
-  git log --graph --color=always --abbrev=7 --format='%C(auto)%h %an %C(blue)%s %C(yellow)%cr' $filter | \
+  git log --graph --color=always --abbrev=7 --format='%C(auto)%h %an %C(blue)%s %C(yellow)%cr' "$@" | \
   fzf --ansi --no-sort --reverse --tiebreak=index \
     --preview "f() { set -- \$(echo -- \$@ | grep -o '[a-f0-9]\{7\}'); [ \$# -eq 0 ] || git show --color=always \$1 $filter; }; f {}" \
     --bind "?:toggle-preview" \
@@ -38,4 +40,4 @@ glg() {
 
 }
 
-glg | grep -o '[a-f0-9]\{7\}'
+glg "$@" | grep -o '[a-f0-9]\{7\}'
