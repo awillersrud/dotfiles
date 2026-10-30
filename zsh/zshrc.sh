@@ -15,8 +15,7 @@
 	alias epoch='date -r'
   	alias g='openGitRepo'
   	alias gw='openWorktree'
-	mkdir -p /tmp/log
-	
+
 # Settings
 	export VISUAL=vim
 
@@ -96,20 +95,7 @@ source ~/dotfiles/zsh/plugins/fixls.zsh
     fi
   }
 
-	# Loop a command and show the output in vim
-	loop() {
-		echo ":cq to quit\n" > /tmp/log/output 
-		fc -ln -1 > /tmp/log/program
-		while true; do
-			cat /tmp/log/program >> /tmp/log/output ;
-			eval "$(cat /tmp/log/program)" |& tee -a /tmp/log/output ;
-			echo '\n' >> /tmp/log/output
-			vim + /tmp/log/output || break;
-			rm -rf /tmp/log/output
-		done;
-	}
-
-# For vim mappings: 
+# For vim mappings:
 	stty -ixon
 
 # Completions
