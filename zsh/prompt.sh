@@ -18,33 +18,44 @@ set_prompt() {
 	# Status Code
 	#PS1+='%(?.., %{$fg[red]%}%?%{$reset_color%})'
 
- 	# Git
- 	if git rev-parse --is-inside-work-tree 2> /dev/null | grep -q 'true' ; then
- 		PS1+=' | '
- 		BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+	# Git: one status call gives branch, upstream, ahead/behind and changed files
+	local GIT_STATUS line BRANCH UPSTREAM AHEAD_BEHIND AHEAD BEHIND
+	local -i STATUS=0
+	if GIT_STATUS=$(git status --porcelain=v2 --branch 2> /dev/null); then
+		for line in ${(f)GIT_STATUS}; do
+			case $line in
+				'# branch.head '*) BRANCH=${line#\# branch.head } ;;
+				'# branch.upstream '*) UPSTREAM=${line#\# branch.upstream } ;;
+				'# branch.ab '*) AHEAD_BEHIND=${line#\# branch.ab } ;;
+				'#'*) ;;
+				*) STATUS+=1 ;;
+			esac
+		done
+		[[ $BRANCH == '(detached)' ]] && BRANCH=HEAD
+
+		PS1+=' | '
 		PS1+="%{$fg[green]%}${BRANCH//\%/%%}%{$reset_color%}"
-		UPSTREAM=$(git rev-parse --abbrev-ref @{upstream} 2>/dev/null)
-		if [[ $? == 0 ]]; then
+		# branch.ab is missing when there is no upstream or it no longer exists
+		if [[ -n $AHEAD_BEHIND ]]; then
 			if [[ "origin/$BRANCH" != $UPSTREAM ]]; then
 				PS1+="%{$fg[yellow]%} -> ${UPSTREAM//\%/%%}%{$reset_color%}"
 			fi
 
-			BEHIND=$(git log ..@{upstream} --oneline 2> /dev/null | wc -l)
-			if [ $BEHIND -gt 0 ]; then
-				PS1+="%{$fg[yellow]%} behind $(echo $BEHIND | awk '{$1=$1};1')%{$reset_color%}"
+			AHEAD=${${AHEAD_BEHIND%% *}#+}
+			BEHIND=${${AHEAD_BEHIND##* }#-}
+			if (( BEHIND > 0 )); then
+				PS1+="%{$fg[yellow]%} behind $BEHIND%{$reset_color%}"
 			fi
-			AHEAD=$(git log @{upstream}.. --oneline 2> /dev/null | wc -l)
-			if [ $AHEAD -gt 0 ]; then
-				PS1+="%{$fg[yellow]%} ahead $(echo $AHEAD | awk '{$1=$1};1')%{$reset_color%}"
+			if (( AHEAD > 0 )); then
+				PS1+="%{$fg[yellow]%} ahead $AHEAD%{$reset_color%}"
 			fi
 		else
 			PS1+="%{$fg[yellow]%} no-upstream%{$reset_color%}"
 		fi
-		STATUS=$(git status --short | wc -l)
-		if [ $STATUS -gt 0 ]; then
-			PS1+="%{$fg[yellow]%} +$(echo $STATUS | awk '{$1=$1};1')%{$reset_color%}"
+		if (( STATUS > 0 )); then
+			PS1+="%{$fg[yellow]%} +$STATUS%{$reset_color%}"
 		fi
- 	fi
+	fi
 
 	# Display non-default JDK
 	JDK=${JAVA_HOME:+`readlink -f $JAVA_HOME | rev | cut -d'/' -f 1 | rev`}
