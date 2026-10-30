@@ -47,8 +47,8 @@ set_prompt() {
  	fi
 
 	# Display non-default JDK
-	JDK=`readlink -f $JAVA_HOME | rev | cut -d'/' -f 1 | rev`
-	if [[ $JDK != *"21.0.1-tem"* ]]; then
+	JDK=${JAVA_HOME:+`readlink -f $JAVA_HOME | rev | cut -d'/' -f 1 | rev`}
+	if [[ -n $JDK && $JDK != *"21.0.1-tem"* ]]; then
 		PS1+=' | '
 		PS1+="%{$fg[cyan]%}$JDK%{$reset_color%}"
 	fi
