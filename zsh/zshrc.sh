@@ -15,7 +15,6 @@
 	alias epoch='date -r'
   	alias g='openGitRepo'
   	alias gw='openWorktree'
-	alias kube-port-forward='read -r namespace pod junk <<<"$(kubectl get pods -A | fzf)" && kubectl port-forward -n "$namespace" "pod/$pod" 8087:8080'
 	mkdir -p /tmp/log
 	
 # Settings
@@ -85,6 +84,11 @@ source ~/dotfiles/zsh/plugins/fixls.zsh
     if [[ -n $target ]]; then
       cd "$target"
     fi
+  }
+
+  # Pick a pod in any namespace and forward local port 8087 to its port 8080
+  function kube-port-forward() {
+    read -r namespace pod junk <<<"$(kubectl get pods -A | fzf)" && kubectl port-forward -n "$namespace" "pod/$pod" 8087:8080
   }
 
 	# Loop a command and show the output in vim
