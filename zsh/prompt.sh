@@ -77,10 +77,8 @@ set_prompt() {
 		PS1+="%{$fg[yellow]%}PID:$!%{$reset_color%}"
 	fi
 
-	# Sudo: https://superuser.com/questions/195781/sudo-is-there-a-command-to-check-if-i-have-sudo-and-or-how-much-time-is-left
-	CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
-	if [ ${CAN_I_RUN_SUDO} -gt 0 ]
-	then
+	# Sudo: only ask sudo whether credentials are cached shortly after a command used it
+	if (( EPOCHSECONDS - SUDO_LAST_USED < SUDO_CACHE_SECONDS )) && sudo -n true 2> /dev/null; then
 		PS1+=' | '
 		PS1+="%{$fg_bold[red]%}SUDO%{$reset_color%}"
 	fi
@@ -90,6 +88,20 @@ set_prompt() {
 }
 
 precmd_functions+=set_prompt
+
+# Sudo caches credentials per terminal for 5 minutes by default, and only root can read
+# that cache. Remember when this shell last ran sudo so the prompt can skip the check otherwise.
+zmodload zsh/datetime
+SUDO_CACHE_SECONDS=300
+SUDO_LAST_USED=0
+
+record_sudo_use() {
+	# $3 is the command line with aliases expanded
+	if [[ $3 =~ '(^|[^[:alnum:]_-])sudo($|[^[:alnum:]_-])' ]]; then
+		SUDO_LAST_USED=$EPOCHSECONDS
+	fi
+}
+preexec_functions+=record_sudo_use
 
 preexec () {
    (( ${#_elapsed[@]} > 1000 )) && _elapsed=(${_elapsed[@]: -1000})
