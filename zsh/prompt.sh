@@ -3,7 +3,9 @@
 # Supported colors: red, blue, green, cyan, yellow, magenta, black, & white
 autoload -U colors && colors
 
-setopt PROMPT_SUBST
+# PS1 is rebuilt before every prompt, so PROMPT_SUBST is not needed. Leaving it off
+# keeps branch and directory names from being executed as $(...) when the prompt is drawn.
+unsetopt PROMPT_SUBST
 
 set_prompt() {
 
@@ -11,7 +13,7 @@ set_prompt() {
 	PS1="[ "
 
 	# Path: http://stevelosh.com/blog/2010/02/my-extravagant-zsh-prompt/
-	PS1+="%{$fg_bold[white]%}${PWD/#$HOME/~}%{$reset_color%}"
+	PS1+="%{$fg_bold[white]%}%~%{$reset_color%}"
 
 	# Status Code
 	#PS1+='%(?.., %{$fg[red]%}%?%{$reset_color%})'
@@ -19,12 +21,12 @@ set_prompt() {
  	# Git
  	if git rev-parse --is-inside-work-tree 2> /dev/null | grep -q 'true' ; then
  		PS1+=' | '
- 		PS1+="%{$fg[green]%}$(git rev-parse --abbrev-ref HEAD 2> /dev/null)%{$reset_color%}"
-		BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+ 		BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+		PS1+="%{$fg[green]%}${BRANCH//\%/%%}%{$reset_color%}"
 		UPSTREAM=$(git rev-parse --abbrev-ref @{upstream} 2>/dev/null)
 		if [[ $? == 0 ]]; then
 			if [[ "origin/$BRANCH" != $UPSTREAM ]]; then
-				PS1+="%{$fg[yellow]%} -> $UPSTREAM%{$reset_color%}"
+				PS1+="%{$fg[yellow]%} -> ${UPSTREAM//\%/%%}%{$reset_color%}"
 			fi
 
 			BEHIND=$(git log ..@{upstream} --oneline 2> /dev/null | wc -l)
