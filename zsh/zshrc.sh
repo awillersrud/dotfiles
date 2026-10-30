@@ -43,8 +43,11 @@ source ~/dotfiles/zsh/plugins/fixls.zsh
 	}
 
   function openGitRepo() {
-    TARGET=`find ~/src -maxdepth 4 -name .git -type d | sed 's#/.git##g' | fzf`
-    cd $TARGET 
+    local target
+    target=`find ~/src -maxdepth 4 -name .git -type d | sed 's#/.git##g' | fzf`
+    if [[ -n $target ]]; then
+      cd "$target"
+    fi
   }
 
   # Pick a worktree of the current repo, most recently used first. The main worktree is listed too.
