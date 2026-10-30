@@ -88,7 +88,11 @@ source ~/dotfiles/zsh/plugins/fixls.zsh
 
   # Pick a pod in any namespace and forward local port 8087 to its port 8080
   function kube-port-forward() {
-    read -r namespace pod junk <<<"$(kubectl get pods -A | fzf)" && kubectl port-forward -n "$namespace" "pod/$pod" 8087:8080
+    local namespace pod junk
+    read -r namespace pod junk <<<"$(kubectl get pods -A | fzf --header-lines=1)"
+    if [[ -n $pod ]]; then
+      kubectl port-forward -n "$namespace" "pod/$pod" 8087:8080
+    fi
   }
 
 	# Loop a command and show the output in vim
