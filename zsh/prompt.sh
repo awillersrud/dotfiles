@@ -58,10 +58,10 @@ set_prompt() {
 	fi
 
 	# Display non-default JDK
-	JDK=${JAVA_HOME:+`readlink -f $JAVA_HOME | rev | cut -d'/' -f 1 | rev`}
-	if [[ -n $JDK && $JDK != *"21.0.1-tem"* ]]; then
+	local DEFAULT_JDK=${SDKMAN_CANDIDATES_DIR:-$HOME/.sdkman/candidates}/java/current
+	if [[ -n $JAVA_HOME && ${JAVA_HOME:A} != ${DEFAULT_JDK:A} ]]; then
 		PS1+=' | '
-		PS1+="%{$fg[cyan]%}$JDK%{$reset_color%}"
+		PS1+="%{$fg[cyan]%}${JAVA_HOME:A:t}%{$reset_color%}"
 	fi
 
 
